@@ -1,0 +1,16 @@
+{
+  "name": "github-uploader",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal GitHub file uploader for Vercel",
+  "main": "api/upload.js",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@octokit/rest": "22.0.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
