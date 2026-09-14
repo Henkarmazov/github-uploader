@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <meta
+    name="description"
+    content="Upload files directly to GitHub repositories."
+  >
+  <title>GitHub Uploader</title>
+
+  <link rel="stylesheet" href="/style.css">
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/jszip@3.10.2/dist/jszip.min.js"
+    defer
+  ></script>
+
+  <script src="/app.js" defer></script>
+</head>
+
+<body>
+
+  <main class="container">
+
+    <header class="header">
+      <div>
+        <h1>GitHub Uploader</h1>
+        <p>Upload files directly to your GitHub repository.</p>
+      </div>
+
+      <div class="badge">
+        Vercel
+      </div>
+    </header>
+
+
+    <section class="card">
+
+      <div class="section-title">
+        <span>01</span>
+        Repository
+      </div>
+
+      <div class="field">
+        <label for="repository">
+          Repository
+        </label>
+
+        <input
+          id="repository"
+          type="text"
+          placeholder="Henkarmazov/produk-topup"
+          autocomplete="off"
+        >
+
+        <small>
+          Format: owner/repository
+        </small>
+      </div>
+
+
+      <div class="grid">
+
+        <div class="field">
+          <label for="branch">
+            Branch
+          </label>
+
+          <input
+            id="branch"
+            type="text"
+            value="main"
+            placeholder="main"
+            autocomplete="off"
+          >
+        </div>
+
+
+        <div class="field">
+          <label for="folder">
+            Folder tujuan
+          </label>
+
+          <input
+            id="folder"
+            type="text"
+            placeholder="assets/poster"
+            autocomplete="off"
+          >
+
+          <small>
+            Kosongkan untuk root repository.
+          </small>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="card">
+
+      <div class="section-title">
+        <span>02</span>
+        Upload
+      </div>
+
+
+      <div class="upload-tabs">
+
+        <button
+          class="tab active"
+          data-mode="files"
+          type="button"
+        >
+          Files
+        </button>
+
+        <button
+          class="tab"
+          data-mode="folder"
+          type="button"
+        >
+          Folder
+        </button>
+
+        <button
+          class="tab"
+          data-mode="zip"
+          type="button"
+        >
+          ZIP
+        </button>
+
+      </div>
+
+
+      <div
+        id="dropZone"
+        class="drop-zone"
+      >
+
+        <div class="upload-icon">
+          ↑
+        </div>
+
+        <h2 id="dropTitle">
+          Drop files here
+        </h2>
+
+        <p id="dropDescription">
+          Atau pilih file dari perangkat kamu.
+        </p>
+
+        <button
+          id="chooseButton"
+          class="button secondary"
+          type="button"
+        >
+          Choose files
+        </button>
+
+        <input
+          id="fileInput"
+          type="file"
+          multiple
+          hidden
+        >
+
+      </div>
+
+
+      <div
+        id="zipOptions"
+        class="zip-options hidden"
+      >
+
+        <label class="radio-option">
+          <input
+            type="radio"
+            name="zipMode"
+            value="extract"
+            checked
+          >
+
+          <span>
+            <strong>Extract ZIP</strong>
+            <small>Upload isi ZIP sebagai file/folder.</small>
+          </span>
+        </label>
+
+
+        <label class="radio-option">
+          <input
+            type="radio"
+            name="zipMode"
+            value="upload"
+          >
+
+          <span>
+            <strong>Upload ZIP</strong>
+            <small>Upload file ZIP apa adanya.</small>
+          </span>
+        </label>
+
+      </div>
+
+
+      <div
+        id="fileList"
+        class="file-list"
+      ></div>
+
+    </section>
+
+
+    <section class="card">
+
+      <div class="section-title">
+        <span>03</span>
+        Commit
+      </div>
+
+
+      <div class="field">
+
+        <label for="commitMessage">
+          Commit message
+        </label>
+
+        <input
+          id="commitMessage"
+          type="text"
+          value="Upload files via GitHub Uploader"
+          maxlength="200"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          Jika file sudah ada
+        </label>
+
+        <div class="radio-row">
+
+          <label class="radio-option compact">
+            <input
+              type="radio"
+              name="existingMode"
+              value="replace"
+              checked
+            >
+
+            <span>
+              Replace
+            </span>
+          </label>
+
+
+          <label class="radio-option compact">
+            <input
+              type="radio"
+              name="existingMode"
+              value="skip"
+            >
+
+            <span>
+              Skip
+            </span>
+          </label>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section
+      id="progressCard"
+      class="card progress-card hidden"
+    >
+
+      <div class="progress-header">
+
+        <strong id="progressTitle">
+          Uploading...
+        </strong>
+
+        <span id="progressPercent">
+          0%
+        </span>
+
+      </div>
+
+
+      <div class="progress-bar">
+        <div
+          id="progressFill"
+          class="progress-fill"
+        ></div>
+      </div>
+
+
+      <div
+        id="progressText"
+        class="progress-text"
+      >
+        0 / 0 files
+      </div>
+
+    </section>
+
+
+    <section
+      id="statusCard"
+      class="status-card hidden"
+    >
+
+      <div id="statusIcon"></div>
+
+      <div>
+        <strong id="statusTitle"></strong>
+        <p id="statusMessage"></p>
+      </div>
+
+    </section>
+
+
+    <button
+      id="uploadButton"
+      class="button primary"
+      type="button"
+    >
+      Upload to GitHub
+    </button>
+
+
+    <button
+      id="clearButton"
+      class="button ghost"
+      type="button"
+    >
+      Clear all
+    </button>
+
+
+    <section
+      id="resultCard"
+      class="card result-card hidden"
+    >
+
+      <div class="result-icon">
+        ✓
+      </div>
+
+      <h2>Upload completed</h2>
+
+      <div class="result-info">
+
+        <div>
+          <span>Repository</span>
+          <strong id="resultRepository"></strong>
+        </div>
+
+        <div>
+          <span>Commit</span>
+          <strong id="resultCommit"></strong>
+        </div>
+
+        <div>
+          <span>Uploaded</span>
+          <strong id="resultUploaded"></strong>
+        </div>
+
+        <div>
+          <span>Skipped</span>
+          <strong id="resultSkipped"></strong>
+        </div>
+
+        <div>
+          <span>Errors</span>
+          <strong id="resultErrors"></strong>
+        </div>
+
+      </div>
+
+
+      <a
+        id="githubLink"
+        class="button primary"
+        href="#"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open GitHub
+      </a>
+
+    </section>
+
+
+    <footer>
+      GitHub Uploader · Built for Vercel
+    </footer>
+
+  </main>
+
+</body>
+</html>
